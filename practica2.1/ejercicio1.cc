@@ -15,7 +15,7 @@ int main(int argc, char* argv[]){
    addrinfo* info;
    int check;
 
-   check = getaddrinfo(argv[1],NULL,NULL,&info);
+   check = getaddrinfo(argv[1],argv[2],NULL,&info);
     
     if(check != 0){
         if(check == EAI_SYSTEM){
@@ -31,8 +31,8 @@ int main(int argc, char* argv[]){
     addrinfo* it;
     
     for(it = info; it != NULL; it = it->ai_next){
-        char hostname[1025];
-        check = getnameinfo(it->ai_addr, it->ai_addrlen, hostname, 1025, NULL, 0 , NI_NUMERICHOST);
+        char hostname[NI_MAXHOST];
+        check = getnameinfo(it->ai_addr, it->ai_addrlen, hostname, NI_MAXHOST, NULL, 0 , NI_NUMERICHOST);
         if(check != 0){
             fprintf(stderr, "Error using getnameinfo: %s\n", gai_strerror(check));
             continue;
