@@ -78,6 +78,17 @@ int main(int argc, char *argv[])
         timeInfo = localtime(&rawTime);
 
         char *format;
+
+        switch (buffer[0])
+        {
+        case 't':
+            /* code */
+            break;
+        
+        default:
+            break;
+        }
+
         if (buffer[0] == 't')
         {
             format = "%r";
@@ -99,8 +110,9 @@ int main(int argc, char *argv[])
         }
         char send[100];
         int timeBytes = strftime(send, 80, format, timeInfo);
+        send[timeBytes] = '\n';
 
-        sendto(sd, send, timeBytes, 0, &client, clientlen);
+        sendto(sd, send, timeBytes + 1, 0, &client, clientlen);
     }
 
     return 0;
