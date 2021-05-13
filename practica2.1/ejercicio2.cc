@@ -2,6 +2,7 @@
 #include <string.h>
 #include <sys/types.h>
 #include <sys/socket.h>
+#include <unistd.h>
 #include <netdb.h>
 #include <time.h>
 
@@ -15,7 +16,7 @@ int main(int argc, char *argv[])
 
     addrinfo *info;
     addrinfo hints;
-    memset(&hints,0,sizeof(addrinfo));
+    memset(&hints, 0, sizeof(addrinfo));
 
     hints.ai_flags = AI_PASSIVE;
     hints.ai_family = AF_INET;
@@ -52,7 +53,7 @@ int main(int argc, char *argv[])
 
     while (true)
     {
-        char buffer[80];
+        char buffer[80] = {};
 
         sockaddr client;
         socklen_t clientlen = sizeof(sockaddr);
@@ -82,38 +83,29 @@ int main(int argc, char *argv[])
         switch (buffer[0])
         {
         case 't':
-            /* code */
-            break;
-        
-        default:
-            break;
-        }
-
-        if (buffer[0] == 't')
-        {
             format = "%r";
-        }
-        else if (buffer[0] == 'd')
-        {
-            format = "%F";
-        }
-        else if (buffer[0] == 'q')
-        {
-            printf("Saliendo...\n");
             break;
-        }
-        else
-        {
+        case 'd':
+         format = "%F";
+            break;
+        case 'q':
+            printf("Saliendo...\n");
+            close(sd);
+            return 0;
+        default:
             printf("Comando no soportado %s\n", buffer);
-            sendto(sd, "Comando no soportado", 21, 0, &client, clientlen);
+            sendto(sd, "Comando no soportado\n", 21, 0, &client, clientlen);
             continue;
         }
-        char send[100];
+
+        char send[80];
         int timeBytes = strftime(send, 80, format, timeInfo);
         send[timeBytes] = '\n';
 
         sendto(sd, send, timeBytes + 1, 0, &client, clientlen);
     }
+
+    close(sd);
 
     return 0;
 }

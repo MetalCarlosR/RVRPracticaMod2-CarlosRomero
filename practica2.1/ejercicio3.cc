@@ -3,6 +3,7 @@
 #include <string.h>
 #include <netdb.h>
 #include <time.h>
+#include <unistd.h>
 #include <arpa/inet.h>
 
 int main(int argc, char *argv[])
@@ -39,5 +40,6 @@ int main(int argc, char *argv[])
 
     buffer[n] = '\n';
     printf("%s", buffer);
+    close(sd);
     return 0;
 }
