@@ -15,14 +15,14 @@ public:
     Jugador(const char *_n, int16_t _x, int16_t _y) : x(_x), y(_y)
     {
         strncpy(name, _n, MAX_NAME);
+        _size = MAX_NAME * sizeof(char) + 2 * sizeof(int16_t);
     };
 
     virtual ~Jugador(){};
 
     void to_bin()
     {
-        int32_t data_size = MAX_NAME * sizeof(char) + 2 * sizeof(int16_t);
-        alloc_data(data_size);
+        alloc_data(_size);
 
         char *tmp = _data;
 
@@ -32,7 +32,7 @@ public:
 
         memcpy(tmp, &x, sizeof(int16_t));
 
-        tmp += MAX_NAME * sizeof(int16_t);
+        tmp += sizeof(int16_t);
 
         memcpy(tmp, &y, sizeof(int16_t));
     }
@@ -47,11 +47,16 @@ public:
 
         memcpy(&x, tmp, sizeof(int16_t));
 
-        tmp += MAX_NAME * sizeof(int16_t);
+        tmp += sizeof(int16_t);
 
         memcpy(&y, tmp, sizeof(int16_t));
 
         return 0;
+    }
+
+    void printData()
+    {
+        printf("Name: %s \nX: %d\nY: %d\n", name, x, y);
     }
 
 private:
@@ -73,6 +78,23 @@ int main(int argc, char **argv)
     one_out.to_bin();
 
     write(fd, one_out.data(), one_out.size());
+
+    close(fd);
+
+    Jugador one_in("", 0, 0);
+
+    fd = open("./data_player", O_RDONLY);
+
+    char *inbuffer;
+
+    read(fd, inbuffer, one_in.size());
+
+    one_in.from_bin(inbuffer);
+
+    printf("-----One_Out-----\n");
+    one_out.printData();
+    printf("-----One_In-----\n");
+    one_in.printData();
 
     return 0;
 }
