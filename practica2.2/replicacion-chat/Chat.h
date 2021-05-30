@@ -71,6 +71,8 @@ public:
     void do_messages();
 
 private:
+
+    void sendMessage(ChatMessage msg, Socket* sender = nullptr);
     /**
      *  Lista de clientes conectados al servidor de Chat, representados por
      *  su socket

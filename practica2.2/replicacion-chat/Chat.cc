@@ -3,6 +3,8 @@
 // -----------------------------------------------------------------------------
 // -----------------------------------------------------------------------------
 
+using msgType = ChatMessage::MessageType;
+
 void ChatMessage::to_bin()
 {
     alloc_data(MESSAGE_SIZE);
@@ -50,6 +52,8 @@ int ChatMessage::from_bin(char *bobj)
 
 void ChatServer::do_messages()
 {
+    Socket *client;
+    ChatMessage msg;
     while (true)
     {
         /*
@@ -62,6 +66,58 @@ void ChatServer::do_messages()
         // - LOGIN: Añadir al vector clients
         // - LOGOUT: Eliminar del vector clients
         // - MESSAGE: Reenviar el mensaje a todos los clientes (menos el emisor)
+
+        socket.recv(msg, client);
+        switch (msg.type)
+        {
+        case msgType::LOGIN:
+        {
+            std::unique_ptr<Socket> sockPtr(client);
+            clients.push_back(std::move(sockPtr));
+
+            std::string out = msg.nick + " has connected.";
+            std::cout << out << std::endl;
+            ChatMessage em("Server", out);
+            em.type = ChatMessage::MESSAGE;
+
+            sendMessage(em);
+            break;
+        }
+        case msgType::MESSAGE:
+        {
+            sendMessage(msg, client);
+            break;
+        }
+        case msgType::LOGOUT:
+        {
+            for(auto it = clients.begin(); it != clients.end(); it++){
+                if((*it).get() == client){
+                    clients.erase(it);
+                    break;
+                }
+            }
+
+            std::string out = msg.nick + " logged out.";
+            std::cout << out << std::endl;
+            ChatMessage em("Server", out);
+            em.type = ChatMessage::MESSAGE;
+
+            sendMessage(em); 
+            break;
+        }
+        default:
+            std::cout << "Unknown type of message recieved" << std::endl;
+            break;
+        }
+    }
+}
+
+void ChatServer::sendMessage(ChatMessage msg, Socket *sender)
+{
+    for (auto const &c : clients)
+    {
+        if (c.get() != sender)
+            socket.send(msg, *c.get());
     }
 }
 
