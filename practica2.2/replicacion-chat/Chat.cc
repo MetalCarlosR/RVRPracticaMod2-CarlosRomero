@@ -90,8 +90,10 @@ void ChatServer::do_messages()
         }
         case msgType::LOGOUT:
         {
-            for(auto it = clients.begin(); it != clients.end(); it++){
-                if((*it).get() == client){
+            for (auto it = clients.begin(); it != clients.end(); it++)
+            {
+                if ((*it).get() == client)
+                {
                     clients.erase(it);
                     break;
                 }
@@ -102,7 +104,7 @@ void ChatServer::do_messages()
             ChatMessage em("Server", out);
             em.type = ChatMessage::MESSAGE;
 
-            sendMessage(em); 
+            sendMessage(em);
             break;
         }
         default:
@@ -136,7 +138,12 @@ void ChatClient::login()
 
 void ChatClient::logout()
 {
-    // Completar
+    std::string msg;
+
+    ChatMessage em(nick, msg);
+    em.type = ChatMessage::LOGOUT;
+
+    socket.send(em, socket);
 }
 
 void ChatClient::input_thread()
@@ -144,7 +151,19 @@ void ChatClient::input_thread()
     while (true)
     {
         // Leer stdin con std::getline
+
+        ChatMessage msg;
+        msg.nick = nick;
+        msg.type = msgType::MESSAGE;
+
+        std::getline(std::cin, msg.message);
+        if (msg.message == "exit")
+        {
+            logout();
+            break;
+        }
         // Enviar al servidor usando socket
+        socket.send(msg, socket);
     }
 }
 
@@ -153,6 +172,13 @@ void ChatClient::net_thread()
     while (true)
     {
         //Recibir Mensajes de red
+        ChatMessage msg;
+        Socket *other;
+        int check = socket.recv(msg, other);
+        if (check == -1)
+            logout();
         //Mostrar en pantalla el mensaje de la forma "nick: mensaje"
+        std::cout << msg.nick << ": " << msg.message << std::endl;
     }
+    logout();
 }
